@@ -12,10 +12,10 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.Toast;
+import android.widget.ToggleButton;
 
 public class MainActivity extends AppCompatActivity {
-    ImageView im1;
-    ImageButton flashButton;
     android.hardware.camera2.CameraDevice cameraDevice;
     private CameraManager cameraManager;
     private String cameraId;
@@ -26,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        flashButton = (ImageButton) findViewById(R.id.selectorButton);
+        ToggleButton customButton = (ToggleButton) findViewById(R.id.customButton);
         cameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
         ActivityCompat.requestPermissions(this, new String[] { Manifest.permission.CAMERA }, 101);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
@@ -38,21 +38,16 @@ public class MainActivity extends AppCompatActivity {
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
-        flashButton.setOnClickListener(new View.OnClickListener() {
+        customButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH)) {
-                    if (!hasCameraPermission()) {
-                        ActivityCompat.requestPermissions(MainActivity.this, new String[] { Manifest.permission.CAMERA }, 101);
-                        return;
-                    }
-                    else {
-                        turnOnOff(v);
-                    }
-                }
-                else {
-                    // say that they don't have camera
-                }
+            if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH)) {
+                turnOnOff(v);
+            }
+            else {
+                // say that they don't have camera
+                Toast.makeText(MainActivity.this, "Device doesn't have camera", Toast.LENGTH_SHORT).show();
+            }
             }
         });
     }
@@ -72,8 +67,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void turnOnOff(View view) {
-        checkState();
-
+        if (!hasCameraPermission()) {
+            ActivityCompat.requestPermissions(MainActivity.this, new String[] { Manifest.permission.CAMERA }, 101);
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                cameraPerm = true;
+            }
+            return;
+        }
+        else {
+            checkState();
+        }
     }
 
     public void turnFlashOn() {
